@@ -1,0 +1,123 @@
+import java.io.*;
+import java.net.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.*;
+import javax.imageio.*;
+import java.util.ArrayList;
+import java.util.Collections;
+
+import javax.swing.*;
+import java.util.Random;
+
+
+public class JumbledLoader extends JPanel{
+    private BufferedImage img, originalImg;
+    private int width, height, curWidth, curHeight, cw, ch;
+    private ArrayList<Integer> cells = new ArrayList<Integer>();
+    private ArrayList<Integer> originalCells = new ArrayList<Integer>();
+    private boolean jumbling;
+    private int square = 2;
+    private Timer timer;
+
+    public JumbledLoader(){
+        loadImage(new File("images/smallpanda.jpg"));
+        for(int i = 0; i<square*square; i++){
+            cells.add(i);
+            originalCells.add(i);
+        }
+        System.out.println(originalCells);
+    }
+    public JumbledLoader(File f){
+        loadImage(f);
+    }
+    public void loadImage(File f) {
+        try {
+            img = ImageIO.read(f);
+            originalImg = img;
+            width = img.getWidth();
+            curWidth = width;
+            cw = width;
+            height = img.getHeight();
+            ch = height;
+            curHeight = height;
+            
+        } catch (IOException e) {
+            System.out.println("Image could not be read");
+        }
+    }
+    public void loadImage(String s){
+        try {
+            URL url = new URL(s);
+            originalImg = img;
+            width = img.getWidth();
+            curWidth = width;
+            height = img.getHeight();
+            curHeight = height;
+            img = ImageIO.read(url);
+        } 
+        catch (IOException e) {
+            System.out.println("Image could not be read");
+        }
+    }
+    public void updateCells(){
+        int square = (int) Math.sqrt(cells.size());
+        cw = img.getWidth()/square;
+        ch = img.getHeight()/square;
+    }
+    public void jumble(){  
+        jumbling = true;
+        cw = img.getWidth()/square;
+        ch = img.getHeight()/square;
+        cells.clear();
+        for(int i = 0; i<square*square; i++){
+            cells.add(i);
+        }
+        Collections.shuffle(cells);
+        
+        repaint();
+    }
+    public boolean bufferedImagesEqual(BufferedImage img1, BufferedImage img2) {
+        if (img1.getWidth() == img2.getWidth() && img1.getHeight() == img2.getHeight()) {
+            for (int x = 0; x < img1.getWidth(); x++) {
+                for (int y = 0; y < img1.getHeight(); y++) {
+                    if (img1.getRGB(x, y) != img2.getRGB(x, y))
+                        return false;
+                }
+            }
+        } else {
+            return false;
+        }
+        return true;
+    }
+    public void reconstruct(){
+        timer = new Timer();
+        timer.schedule(new TimerTask (){
+            public void run() {
+                while(!cells.equals(originalCells)){
+                    jumble();
+                }
+            }
+        }, 1000);
+    }
+    public void updateImg(){
+        repaint();
+    }
+    public void paint(Graphics g) {    
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+
+        int newWidth = (int) curWidth;
+        int newHeight = (int) curHeight;
+        if(jumbling){
+            for(int i = 0; i<cells.size(); i++){
+                int size = (int) Math.sqrt(cells.size());
+                int cellIndex = cells.get(i);
+                g2d.drawImage(img.getSubimage(cellIndex%size*cw, (int)cellIndex/size*ch, cw, ch),cw*(i%size), ch*((int)i/size), null);
+            }
+        }
+        else{
+            g2d.drawImage(img, 0, 0, newWidth, newHeight, null);
+        }
+    }
+}
