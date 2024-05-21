@@ -1,0 +1,58 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.Graphics2D;
+import javax.imageio.*;
+import java.io.File;
+import java.awt.image.BufferedImage;
+import javax.swing.JSlider;
+import javax.swing.event.*;
+import java.util.Timer;
+
+
+
+public class Main extends JPanel implements ActionListener
+{
+    public static JFrame frame;
+    private static JPanel bottomPanel, imgPanel, buttonPanel;
+    private static ButtonGroup zoomGroup;
+    private static JButton shuffleImg, reconstructImg;
+    private static JumbledLoader L;
+    
+    public Main() {
+        frame = new JFrame();
+        bottomPanel = new JPanel();
+        buttonPanel = new JPanel();
+        imgPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); 
+
+        shuffleImg = new JButton("Shuffle");
+        reconstructImg = new JButton("Reconstruct");
+
+        shuffleImg.addActionListener(this);
+        reconstructImg.addActionListener(this);
+
+        buttonPanel.add(shuffleImg);
+        buttonPanel.add(reconstructImg);
+        
+        L = new JumbledLoader();
+        frame.add(L, BorderLayout.CENTER);
+        bottomPanel.add(buttonPanel, BorderLayout.CENTER);
+        
+        frame.add(bottomPanel, BorderLayout.SOUTH);
+
+        frame.setSize(600, 600);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+    public static void main(String[] args){      
+        new Main();
+    }
+    public void actionPerformed(ActionEvent e){
+        if(e.getSource() == shuffleImg){
+            L.jumble();
+        }
+        else if(e.getSource() == reconstructImg){
+            L.reconstruct();
+        }
+    }
+}
