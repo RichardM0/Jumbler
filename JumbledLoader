@@ -6,7 +6,7 @@ import java.awt.image.*;
 import javax.imageio.*;
 import java.util.ArrayList;
 import java.util.Collections;
-
+import java.lang.Thread;
 import javax.swing.*;
 import java.util.Random;
 
@@ -17,7 +17,7 @@ public class JumbledLoader extends JPanel{
     private ArrayList<Integer> cells = new ArrayList<Integer>();
     private ArrayList<Integer> originalCells = new ArrayList<Integer>();
     private boolean jumbling;
-    private int square = 2;
+    private int square = 3;
     private Timer timer;
 
     public JumbledLoader(){
@@ -69,36 +69,47 @@ public class JumbledLoader extends JPanel{
         jumbling = true;
         cw = img.getWidth()/square;
         ch = img.getHeight()/square;
+        BufferedImage jumbledImg = new BufferedImage(cw*square, ch*square, BufferedImage.TYPE_INT_ARGB);
+        
         cells.clear();
         for(int i = 0; i<square*square; i++){
             cells.add(i);
         }
+        Graphics2D g2d = jumbledImg.createGraphics();
         Collections.shuffle(cells);
-        
+        for(int i = 0; i<cells.size(); i++){
+            int size = (int) Math.sqrt(cells.size());
+            int cellIndex = cells.get(i);
+            g2d.drawImage(img.getSubimage(cellIndex%size*cw, (int)cellIndex/size*ch, cw, ch),cw*(i%size), ch*((int)i/size), null);
+        }
+        g2d.dispose();
+        img = jumbledImg;
         repaint();
     }
     public boolean bufferedImagesEqual(BufferedImage img1, BufferedImage img2) {
-        if (img1.getWidth() == img2.getWidth() && img1.getHeight() == img2.getHeight()) {
-            for (int x = 0; x < img1.getWidth(); x++) {
-                for (int y = 0; y < img1.getHeight(); y++) {
-                    if (img1.getRGB(x, y) != img2.getRGB(x, y))
-                        return false;
-                }
+        int width = Math.min(img1.getWidth(), img2.getWidth());
+        int height = Math.min(img1.getHeight(), img2.getHeight());
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (img1.getRGB(x, y) != img2.getRGB(x, y))
+                    return false;
             }
-        } else {
-            return false;
         }
         return true;
     }
     public void reconstruct(){
-        timer = new Timer();
-        timer.schedule(new TimerTask (){
-            public void run() {
-                while(!cells.equals(originalCells)){
-                    jumble();
-                }
-            }
-        }, 1000);
+        int length = square*square;
+        System.out.println(cells);
+        int numTries = 0;
+        for(int i=0; i<length; i++){
+            int curValue = cells.get(i);
+            cells.set(i, i);
+            cells.set(curValue, curValue);
+            numTries++;
+            // draw the image each time using jumble method drawing 
+            BufferedImage sortedImg = new BufferedImage(cw*square, ch*square, BufferedImage.TYPE_INT_ARGB);
+        }
+        System.out.println(numTries);
     }
     public void updateImg(){
         repaint();
@@ -109,15 +120,6 @@ public class JumbledLoader extends JPanel{
 
         int newWidth = (int) curWidth;
         int newHeight = (int) curHeight;
-        if(jumbling){
-            for(int i = 0; i<cells.size(); i++){
-                int size = (int) Math.sqrt(cells.size());
-                int cellIndex = cells.get(i);
-                g2d.drawImage(img.getSubimage(cellIndex%size*cw, (int)cellIndex/size*ch, cw, ch),cw*(i%size), ch*((int)i/size), null);
-            }
-        }
-        else{
-            g2d.drawImage(img, 0, 0, newWidth, newHeight, null);
-        }
+        g2d.drawImage(img, 0, 0, newWidth, newHeight, null);
     }
 }
