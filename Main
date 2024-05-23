@@ -15,7 +15,7 @@ public class JumbleMain extends JPanel implements ActionListener
 {
     public static JFrame frame;
     private static JPanel bottomPanel, imgPanel, buttonPanel;
-    private static JButton shuffleImg, reconstructImg, saveImg;
+    private static JButton shuffleImg, reconstructImg, saveImg, setOriginal, setJumbled;
     private static JumbledLoader L;
     
     public JumbleMain() {
@@ -27,14 +27,20 @@ public class JumbleMain extends JPanel implements ActionListener
         shuffleImg = new JButton("Shuffle");
         reconstructImg = new JButton("Reconstruct");
         saveImg = new JButton("Save");
+        setOriginal = new JButton("Set Original");
+        setJumbled = new JButton("Change Jumbled");
 
         shuffleImg.addActionListener(this);
         reconstructImg.addActionListener(this);
         saveImg.addActionListener(this);
+        setOriginal.addActionListener(this);
+        setJumbled.addActionListener(this);
 
         buttonPanel.add(shuffleImg);
         buttonPanel.add(reconstructImg);
         buttonPanel.add(saveImg);
+        buttonPanel.add(setOriginal);
+        buttonPanel.add(setJumbled);
         
         L = new JumbledLoader();
         frame.add(L, BorderLayout.CENTER);
@@ -68,6 +74,20 @@ public class JumbleMain extends JPanel implements ActionListener
             JFileChooser chooser = new JFileChooser("./images");
             if(chooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
                saveImage(chooser.getSelectedFile());
+            }
+        }
+        else if(e.getSource() == setOriginal){
+            JFileChooser select = new JFileChooser("images/");
+            int status = select.showOpenDialog(frame);
+            if (status == JFileChooser.APPROVE_OPTION) {
+                L.setOriginalImg(select.getSelectedFile());
+            }
+        }
+        else if(e.getSource() == setJumbled){
+            JFileChooser select = new JFileChooser("images/");
+            int status = select.showOpenDialog(frame);
+            if (status == JFileChooser.APPROVE_OPTION) {
+                L.setImg(select.getSelectedFile());
             }
         }
     }
