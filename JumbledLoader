@@ -16,7 +16,6 @@ public class JumbledLoader extends JPanel{
     private int width, height, curWidth, curHeight, cw, ch;
     private ArrayList<Integer> cells = new ArrayList<Integer>();
     private ArrayList<Integer> originalCells = new ArrayList<Integer>();
-    private boolean jumbling;
     private int square = 3;
     private Timer timer;
 
@@ -36,26 +35,10 @@ public class JumbledLoader extends JPanel{
             originalImg = ImageIO.read(new File("images/smallpanda.jpg"));
             width = img.getWidth();
             curWidth = width;
-            cw = width;
             height = img.getHeight();
-            ch = height;
             curHeight = height;
             
         } catch (IOException e) {
-            System.out.println("Image could not be read");
-        }
-    }
-    public void loadImage(String s){
-        try {
-            URL url = new URL(s);
-            originalImg = img;
-            width = img.getWidth();
-            curWidth = width;
-            height = img.getHeight();
-            curHeight = height;
-            img = ImageIO.read(url);
-        } 
-        catch (IOException e) {
             System.out.println("Image could not be read");
         }
     }
@@ -65,7 +48,6 @@ public class JumbledLoader extends JPanel{
         ch = img.getHeight()/square;
     }
     public void jumble(){  
-        jumbling = true;
         cw = img.getWidth()/square;
         ch = img.getHeight()/square;
         BufferedImage jumbledImg = new BufferedImage(cw*square, ch*square, BufferedImage.TYPE_INT_ARGB);
