@@ -13,14 +13,14 @@ import java.util.Random;
 
 public class JumbledLoader extends JPanel{
     private BufferedImage img, originalImg;
-    private int width, height, curWidth, curHeight, cw, ch;
+    private int curWidth, curHeight, cw, ch;
     private ArrayList<Integer> cells = new ArrayList<Integer>();
     private ArrayList<Integer> originalCells = new ArrayList<Integer>();
     private int square = 3;
     private Timer timer;
 
     public JumbledLoader(){
-        loadImage(new File("images/smallpandaJ.jpg"));
+        loadImage(new File("images/smallpanda2.jpg"));
         for(int i = 0; i<square*square; i++){
             cells.add(i);
             originalCells.add(i);
@@ -33,10 +33,8 @@ public class JumbledLoader extends JPanel{
         try {
             img = ImageIO.read(f);
             originalImg = ImageIO.read(new File("images/smallpanda.jpg"));
-            width = img.getWidth();
-            curWidth = width;
-            height = img.getHeight();
-            curHeight = height;
+            curWidth = img.getWidth();
+            curHeight = img.getHeight();
             
         } catch (IOException e) {
             System.out.println("Image could not be read");
@@ -44,12 +42,12 @@ public class JumbledLoader extends JPanel{
     }
     public void updateCells(){
         int square = (int) Math.sqrt(cells.size());
-        cw = img.getWidth()/square;
-        ch = img.getHeight()/square;
+        cw = curWidth/square;
+        ch = curHeight/square;
     }
     public void jumble(){  
-        cw = img.getWidth()/square;
-        ch = img.getHeight()/square;
+        cw = curWidth/square;
+        ch = curHeight/square;
         BufferedImage jumbledImg = new BufferedImage(cw*square, ch*square, BufferedImage.TYPE_INT_ARGB);
         
         cells.clear();
@@ -78,49 +76,10 @@ public class JumbledLoader extends JPanel{
         }
         return true;
     }
-    /*public void reconstruct()
-    {
-        Thread t = new Thread(() ->{
-            cw = img.getWidth()/square;
-            ch = img.getHeight()/square;
-            int length = square*square;
-            int numTries = 0;
-            Graphics2D g2d = img.createGraphics();
-            System.out.println(cells);
-            for(int i=0; i<length; i++){
-                int curValue = cells.get(i);
-                int swapIndex = cells.indexOf(i);
-                
-                if(curValue == i){
-                    continue;
-                }
-                cells.set(i, i);
-                cells.set(swapIndex, curValue);
-                for(int j = 0; j<cells.size(); j++){
-                    try{
-                        Thread.sleep(100);
-                    }
-                    catch(Exception e){
-                        System.out.println("Failed sleep");
-                    }
-                    int cellIndex = cells.get(j);
-                    g2d.drawImage(originalImg.getSubimage(j%square*cw, (int)j/square*ch, cw, ch),cw*(j%square), ch*((int)j/square), null);
-                    repaint(0,0, this.getWidth(), this.getHeight());
-                }
-                System.out.println("loop" + i + ": " + cells);
-                numTries++;
-            }
-            System.out.println("It took: " + numTries + " tries.");
-
-            g2d.dispose();
-
-        });
-        t.start();
-    }*/
     public void reconstruct(){
         Thread t = new Thread(() ->{
-            cw = img.getWidth()/square;
-            ch = img.getHeight()/square;
+            cw = curWidth/square;
+            ch = curHeight/square;
             int numTries = 0;
             int length = square*square;
             Graphics2D g2d = img.createGraphics();
@@ -156,7 +115,20 @@ public class JumbledLoader extends JPanel{
             });
         t.start();
     }
-    public void updateImg(){
+    public void setOriginalImg(File f){
+        try{
+            originalImg = ImageIO.read(f);
+        }catch(Exception e){
+            System.out.println("Failed to update Original Image");
+        }
+        repaint();
+    }
+    public void setImg(File f){
+        try{
+            img = ImageIO.read(f);
+        }catch(Exception e){
+            System.out.println("Failed to update Current Image");
+        }
         repaint();
     }
     public BufferedImage getImg(){
@@ -165,9 +137,8 @@ public class JumbledLoader extends JPanel{
     public void paint(Graphics g) {    
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-
-        int newWidth = (int) curWidth;
-        int newHeight = (int) curHeight;
-        g2d.drawImage(img, 300-curWidth/2, 250-curHeight/2, newWidth, newHeight, null);
+        int imgY = 250-curHeight/2;
+        g2d.drawImage(originalImg, 50, imgY, curWidth, curHeight, null);
+        g2d.drawImage(img, curWidth + 100, imgY, curWidth, curHeight, null);
     }
 }
