@@ -11,15 +11,14 @@ import java.util.Timer;
 
 
 
-public class Main extends JPanel implements ActionListener
+public class JumbleMain extends JPanel implements ActionListener
 {
     public static JFrame frame;
     private static JPanel bottomPanel, imgPanel, buttonPanel;
-    private static ButtonGroup zoomGroup;
-    private static JButton shuffleImg, reconstructImg;
+    private static JButton shuffleImg, reconstructImg, saveImg;
     private static JumbledLoader L;
     
-    public Main() {
+    public JumbleMain() {
         frame = new JFrame();
         bottomPanel = new JPanel();
         buttonPanel = new JPanel();
@@ -27,12 +26,15 @@ public class Main extends JPanel implements ActionListener
 
         shuffleImg = new JButton("Shuffle");
         reconstructImg = new JButton("Reconstruct");
+        saveImg = new JButton("Save");
 
         shuffleImg.addActionListener(this);
         reconstructImg.addActionListener(this);
+        saveImg.addActionListener(this);
 
         buttonPanel.add(shuffleImg);
         buttonPanel.add(reconstructImg);
+        buttonPanel.add(saveImg);
         
         L = new JumbledLoader();
         frame.add(L, BorderLayout.CENTER);
@@ -45,7 +47,15 @@ public class Main extends JPanel implements ActionListener
         frame.setVisible(true);
     }
     public static void main(String[] args){      
-        new Main();
+        new JumbleMain();
+    }
+    public void saveImage(File image) {
+        BufferedImage img = L.getImg();
+         try {
+            ImageIO.write(img, "png", image);
+        } catch (Exception e) {
+            System.out.println("Image could not be read");
+        }
     }
     public void actionPerformed(ActionEvent e){
         if(e.getSource() == shuffleImg){
@@ -53,6 +63,12 @@ public class Main extends JPanel implements ActionListener
         }
         else if(e.getSource() == reconstructImg){
             L.reconstruct();
+        }
+        else if(e.getSource() == saveImg){
+            JFileChooser chooser = new JFileChooser("./images");
+            if(chooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
+               saveImage(chooser.getSelectedFile());
+            }
         }
     }
 }
