@@ -16,9 +16,10 @@ public class JumbledLoader extends JPanel{
     private int curWidth, curHeight, cw, ch;
     private ArrayList<Integer> cells = new ArrayList<Integer>();
     private int square = 3;
+    private boolean reconstructing = false;
 
     public JumbledLoader(){
-        loadImage(new File("images/smallpanda2.jpg"));
+        loadImage(new File("images/smallpandaJ.jpg"));
         for(int i = 0; i<square*square; i++){
             cells.add(i);
         }
@@ -32,14 +33,13 @@ public class JumbledLoader extends JPanel{
             originalImg = ImageIO.read(new File("images/smallpanda.jpg"));
             curWidth = img.getWidth();
             curHeight = img.getHeight();
-            if(curWidth>300 || curHeight>300){
-                resize(300/Double.valueOf(curWidth), 300/Double.valueOf(curHeight));
-            }
+            resize(img);
+            resize(originalImg);
         } catch (IOException e) {
             System.out.println("Image could not be read");
         }
     }
-    public void resize(double ws, double hs){
+    /*public void resize(double ws, double hs){
         double scale = Math.min(ws, hs);
         curWidth = (int)(Double.valueOf(curWidth)*scale);
         curHeight = (int)(Double.valueOf(curHeight)*scale);
@@ -47,16 +47,48 @@ public class JumbledLoader extends JPanel{
         BufferedImage resizedImage = new BufferedImage(curWidth, curHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = resizedImage.createGraphics();
         g.drawImage(img, 0, 0 , curWidth, curHeight, null);
+        
+        BufferedImage resizedOImage = new BufferedImage(curWidth, curHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resizedOImage.createGraphics();
+        g2d.drawImage(originalImg, 0, 0 , curWidth, curHeight, null);
+        
+        g2d.dispose();
         g.dispose();
+        originalImg = resizedOImage;
         img = resizedImage;
+        repaint();
+    }*/
+    public void resize(BufferedImage i){
+        int width = i.getWidth();
+        int height = i.getHeight();
+        
+        if(Math.max(width, height) == width && width>250){
+            width = 250;
+            height = (int)(Double.valueOf(height)*(250/Double.valueOf(width)));
+        }
+        if(Math.max(width, height) == height && height>300){
+            width = (int)(Double.valueOf(height)*(300/Double.valueOf(height)));
+            height = 300;
+        }
+        if(width == height && width>250){
+            width = 250;
+            height = 250;
+        }
+
+        
+        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = resizedImage.createGraphics();
+        g.drawImage(i, 0, 0 , curWidth, curHeight, null);
+        g.dispose();
+
+        i = resizedImage;
         repaint();
     }
     public void updateCells(){
         curWidth = img.getWidth();
         curHeight = img.getHeight();
-        if(curWidth>300 || curHeight>300){
-                resize(300/Double.valueOf(curWidth), 300/Double.valueOf(curHeight));
-        }
+        resize(img);
+        resize(originalImg);
         cw = curWidth/square;
         ch = curHeight/square;
     }
@@ -92,7 +124,11 @@ public class JumbledLoader extends JPanel{
         return true;
     }
     public void reconstruct(){
+        if(reconstructing){
+            return;
+        }
         Thread t = new Thread(() ->{
+            reconstructing = true;
             cw = curWidth/square;
             ch = curHeight/square;
             int numTries = 0;
@@ -127,6 +163,7 @@ public class JumbledLoader extends JPanel{
                 numTries++;
             }
             System.out.println("It took: " + numTries);
+            reconstructing = false;
             });
         t.start();
     }
@@ -154,8 +191,9 @@ public class JumbledLoader extends JPanel{
     public void paint(Graphics g) {    
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        int imgY = 250-curHeight/2;
-        g2d.drawImage(originalImg, 50, imgY, curWidth, curHeight, null);
-        g2d.drawImage(img, curWidth + 100, imgY, curWidth, curHeight, null);
+        int imgY = JumbleMain.frame.getHeight()/2-2*curHeight/3;
+        int imgX = JumbleMain.frame.getWidth()/2;
+        g2d.drawImage(originalImg, imgX - 4*curWidth/3, imgY, curWidth, curHeight, null);
+        g2d.drawImage(img, imgX + curWidth/3, imgY, curWidth, curHeight, null);
     }
 }
