@@ -15,15 +15,12 @@ public class JumbledLoader extends JPanel{
     private BufferedImage img, originalImg;
     private int curWidth, curHeight, cw, ch;
     private ArrayList<Integer> cells = new ArrayList<Integer>();
-    private ArrayList<Integer> originalCells = new ArrayList<Integer>();
     private int square = 3;
-    private Timer timer;
 
     public JumbledLoader(){
         loadImage(new File("images/smallpanda2.jpg"));
         for(int i = 0; i<square*square; i++){
             cells.add(i);
-            originalCells.add(i);
         }
     }
     public JumbledLoader(File f){
@@ -35,13 +32,31 @@ public class JumbledLoader extends JPanel{
             originalImg = ImageIO.read(new File("images/smallpanda.jpg"));
             curWidth = img.getWidth();
             curHeight = img.getHeight();
-            
+            if(curWidth>300 || curHeight>300){
+                resize(300/Double.valueOf(curWidth), 300/Double.valueOf(curHeight));
+            }
         } catch (IOException e) {
             System.out.println("Image could not be read");
         }
     }
+    public void resize(double ws, double hs){
+        double scale = Math.min(ws, hs);
+        curWidth = (int)(Double.valueOf(curWidth)*scale);
+        curHeight = (int)(Double.valueOf(curHeight)*scale);
+        
+        BufferedImage resizedImage = new BufferedImage(curWidth, curHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = resizedImage.createGraphics();
+        g.drawImage(img, 0, 0 , curWidth, curHeight, null);
+        g.dispose();
+        img = resizedImage;
+        repaint();
+    }
     public void updateCells(){
-        int square = (int) Math.sqrt(cells.size());
+        curWidth = img.getWidth();
+        curHeight = img.getHeight();
+        if(curWidth>300 || curHeight>300){
+                resize(300/Double.valueOf(curWidth), 300/Double.valueOf(curHeight));
+        }
         cw = curWidth/square;
         ch = curHeight/square;
     }
@@ -118,6 +133,7 @@ public class JumbledLoader extends JPanel{
     public void setOriginalImg(File f){
         try{
             originalImg = ImageIO.read(f);
+            updateCells();
         }catch(Exception e){
             System.out.println("Failed to update Original Image");
         }
@@ -126,6 +142,7 @@ public class JumbledLoader extends JPanel{
     public void setImg(File f){
         try{
             img = ImageIO.read(f);
+            updateCells();
         }catch(Exception e){
             System.out.println("Failed to update Current Image");
         }
