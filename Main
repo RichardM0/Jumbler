@@ -15,6 +15,7 @@ public class JumbleMain extends JPanel implements ActionListener
     private static JPanel bottomPanel, imgPanel, buttonPanel;
     private static JButton shuffleImg, reconstructImg, saveImg, setOriginal, setJumbled;
     private static JumbledLoader L;
+    public static int width, height;
     
     public JumbleMain() {
         frame = new JFrame();
@@ -45,8 +46,8 @@ public class JumbleMain extends JPanel implements ActionListener
         bottomPanel.add(buttonPanel, BorderLayout.CENTER);
         
         frame.add(bottomPanel, BorderLayout.SOUTH);
-
-        frame.setSize(600, 600);
+        
+        frame.setSize(900, 900);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
