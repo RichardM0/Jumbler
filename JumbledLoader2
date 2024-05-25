@@ -1,0 +1,201 @@
+import java.io.*;
+import java.net.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.*;
+import javax.imageio.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.lang.Thread;
+import javax.swing.*;
+import java.util.Random;
+
+
+public class JumbledLoader extends JPanel{
+    private BufferedImage img, originalImg;
+    private int oWidth, oHeight, curWidth, curHeight, cw, ch;
+    private ArrayList<Integer> cells = new ArrayList<Integer>();
+    private int square = 2;
+    private boolean reconstructing;
+
+    public JumbledLoader(){
+        loadImage(new File("images/smallpanda.jpg"));
+        for(int i = 0; i<square*square; i++){
+            cells.add(i);
+        }
+    }
+    public JumbledLoader(File f){
+        loadImage(f);
+    }
+    public void loadImage(File f) {
+        try {
+            img = ImageIO.read(f);
+            originalImg = ImageIO.read(new File("images/smallpanda.jpg"));
+            curWidth = img.getWidth();
+            curHeight = img.getHeight();
+            oWidth = originalImg.getWidth();
+            oHeight = img.getHeight();
+            img = resize(img);
+            originalImg = resize(originalImg);
+            reconstructing = false;
+        } catch (IOException e) {
+            System.out.println("Image could not be read");
+        }
+    }
+    public void setSquare(int s){
+        /*if(!reconstructing){
+            square = s;
+            return;
+        }
+        System.out.println("Can't change now.");*/
+        square = s;
+    }
+    public BufferedImage resize(BufferedImage i){
+        double w = i.getWidth();
+        double h = i.getHeight();
+        if(Math.max(w,h) == w && w>300){
+            h = h/w*300;
+            w = 300; 
+        }else if(Math.max(w,h) == h && h>300){
+            w = w/h*300;
+            h = 300;
+        }else if(w == h && w>300){
+            w = 300;
+            h = 300;
+        }
+        
+        int newWidth = (int)Math.floor(w+0.5);
+        int newHeight = (int)Math.floor(h+0.5);
+        
+        BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = resizedImage.createGraphics();
+        g.drawImage(i, 0, 0, newWidth, newHeight, null);
+        g.dispose();
+        
+        if(bufferedImagesEqual(i, img)){
+            curWidth = newWidth;
+            curHeight = newHeight;
+        }
+        else{
+            oWidth = newWidth;
+            oHeight = newHeight;
+        }
+        return resizedImage;
+    }
+    public void jumble(){ 
+        System.out.println("s: " + square);
+        cw = img.getWidth()/square;
+        ch = img.getHeight()/square;
+        BufferedImage jumbledImg = new BufferedImage(cw*square, ch*square, BufferedImage.TYPE_INT_ARGB);
+        
+        cells.clear();
+        for(int i = 0; i<square*square; i++){
+            cells.add(i);
+        }
+        Graphics2D g2d = jumbledImg.createGraphics();
+        Collections.shuffle(cells);
+
+        for(int i = 0; i<cells.size(); i++){
+            int cellIndex = cells.get(i);
+            g2d.drawImage(img.getSubimage(cellIndex%square*cw, (int)cellIndex/square*ch, cw, ch),cw*(i%square), ch*((int)i/square), null);
+        }
+        g2d.dispose();
+        img = jumbledImg;
+        repaint();
+    }
+    public boolean bufferedImagesEqual(BufferedImage img1, BufferedImage img2)
+    {
+        int width = Math.min(img1.getWidth(), img2.getWidth());
+        int height = Math.min(img1.getHeight(), img2.getHeight());
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (img1.getRGB(x, y) != img2.getRGB(x, y))
+                    return false;
+            }
+        }
+        return true;
+    }
+    public void reconstruct(){
+        if(reconstructing){
+            return;
+        }
+        Thread t = new Thread(() ->{
+            try{
+                reconstructing = true;
+                cw = img.getWidth()/square;
+                ch = img.getHeight()/square;
+                int numTries = 0;
+                int length = square*square;
+                Graphics2D g2d = img.createGraphics();
+                for(int i=0; i<length; i++){
+                    BufferedImage subImg = new BufferedImage(cw,ch,BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D g = subImg.createGraphics();
+                    g.drawImage(img.getSubimage(i%square*cw, (int)i/square*ch, cw, ch),0,0,null);
+                    g.dispose();
+                    BufferedImage subOriginalImg = originalImg.getSubimage(i%square*cw, (int)i/square*ch, cw, ch);
+                    
+                    if(bufferedImagesEqual(subImg, subOriginalImg)){
+                        continue;
+                    }
+                    else{
+                        for(int j = 0; j<length; j++){
+                            BufferedImage loopOriginalImg = img.getSubimage(j%square*cw, (int)j/square*ch, cw, ch);
+                            if(bufferedImagesEqual(subOriginalImg, loopOriginalImg)){
+                                 g2d.drawImage(img.getSubimage(j%square*cw, (int)j/square*ch, cw, ch), i%square*cw, (int)i/square*ch, null); 
+                                 g2d.drawImage(subImg, j%square*cw, (int)j/square*ch, null);
+                                 repaint();
+                            }
+                            try{
+                                 Thread.sleep(50);
+                            }
+                            catch(Exception e){
+                                 ;
+                            }
+                        }
+                    }
+                    numTries++;
+                }
+                /*if(numTries == square*square){
+                    System.out.println("Couldn't reconstruct. Grid's do not match.");
+                }
+                else{
+                    System.out.println("It took: " + numTries + " tries.");
+                }*/
+                System.out.println("It took: " + numTries + " tries.");
+                reconstructing = false;
+            }catch(Exception e){
+                System.out.println("Can't reconstruct. Grid's do not match.");
+            }
+        });
+        t.start();
+    }
+    public void setOriginalImg(File f){
+        try{
+            originalImg = ImageIO.read(f);
+            originalImg = resize(originalImg);
+        }catch(Exception e){
+            System.out.println("Failed to update Original Image");
+        }
+        repaint();
+    }
+    public void setImg(File f){
+        try{
+            img = ImageIO.read(f);
+            img = resize(img);
+        }catch(Exception e){
+            System.out.println("Failed to update Current Image");
+        }
+        repaint();
+    }
+    public BufferedImage getImg(){
+        return img;
+    }
+    public void paint(Graphics g) {    
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        int imgY = JumbleMain.frame.getHeight()/2-2*curHeight/3;
+        int imgX = JumbleMain.frame.getWidth()/2;
+        g2d.drawImage(originalImg, imgX - 4*curWidth/3, imgY, oWidth, oHeight, null);
+        g2d.drawImage(img, imgX + curWidth/3, imgY, curWidth, curHeight, null);
+    }
+}
