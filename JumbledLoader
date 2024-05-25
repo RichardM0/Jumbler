@@ -104,6 +104,7 @@ public class JumbledLoader extends JPanel{
     }
     public void reconstruct(){
         if(reconstructing){
+            System.out.println("Already reconstructing.");
             return;
         }
         Thread t = new Thread(() ->{
