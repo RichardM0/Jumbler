@@ -9,13 +9,16 @@ import javax.swing.event.*;
 
 
 
-public class JumbleMain extends JPanel implements ActionListener
+public class JumbleMain extends JPanel implements ActionListener, ItemListener
 {
     public static JFrame frame;
     private static JPanel bottomPanel, imgPanel, buttonPanel;
     private static JButton shuffleImg, reconstructImg, saveImg, setOriginal, setJumbled;
     private static JumbledLoader L;
-    public static int width, height;
+    private static JMenuBar menuBar;
+    private static JMenu gridMenu;
+    private static JRadioButtonMenuItem two, three;
+    private static ButtonGroup gridGroup;
     
     public JumbleMain() {
         frame = new JFrame();
@@ -41,12 +44,32 @@ public class JumbleMain extends JPanel implements ActionListener
         buttonPanel.add(setOriginal);
         buttonPanel.add(setJumbled);
         
+        menuBar = new JMenuBar();
+        gridMenu = new JMenu("Shuffle Size");
+        gridGroup = new ButtonGroup();
+        gridMenu.addSeparator();
+        
+        two = new JRadioButtonMenuItem("2x2");
+        three = new JRadioButtonMenuItem("3x3");
+  
+
+        two.addItemListener(this);
+        three.addItemListener(this);
+
+        gridGroup.add(two);
+        gridGroup.add(three);
+       
+        gridMenu.add(two);
+        gridMenu.add(three);
+
+        menuBar.add(gridMenu);
+        
         L = new JumbledLoader();
         frame.add(L, BorderLayout.CENTER);
         bottomPanel.add(buttonPanel, BorderLayout.CENTER);
         
         frame.add(bottomPanel, BorderLayout.SOUTH);
-        
+        frame.setJMenuBar(menuBar);
         frame.setSize(900, 900);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
@@ -60,6 +83,15 @@ public class JumbleMain extends JPanel implements ActionListener
             ImageIO.write(img, "png", image);
         } catch (Exception e) {
             System.out.println("Image could not be read");
+        }
+    }
+    public void itemStateChanged(ItemEvent e){
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            if (e.getSource() == two) {
+                L.setSquare(2);
+            } else if (e.getSource() == three) {
+                L.setSquare(3);
+            }
         }
     }
     public void actionPerformed(ActionEvent e){
