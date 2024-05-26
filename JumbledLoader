@@ -19,7 +19,7 @@ public class JumbledLoader extends JPanel{
     private boolean reconstructing = false;
 
     public JumbledLoader(){
-        loadImage(new File("images/smallpanda.jpg"));
+        loadImage(new File("images/smallpandzza.jpg"));
         for(int i = 0; i<square*square; i++){
             cells.add(i);
         }
@@ -61,11 +61,16 @@ public class JumbledLoader extends JPanel{
         Graphics2D g = resizedImage.createGraphics();
         g.drawImage(i, 0, 0, (int) w, (int) h, null);
         g.dispose();
-        if(bufferedImagesEqual(i, img)){
+        try{
+            if(bufferedImagesEqual(i, img)){
+                curWidth = (int) w;
+                curHeight = (int) h;
+            }
+        }catch(Exception e){
             curWidth = (int) w;
             curHeight = (int) h;
         }
-        else{
+        if(bufferedImagesEqual(i, originalImg)){
             oWidth = (int) w;
             oHeight = (int) h;
         }
