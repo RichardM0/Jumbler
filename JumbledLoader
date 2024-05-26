@@ -17,7 +17,6 @@ public class JumbledLoader extends JPanel{
     private ArrayList<Integer> cells = new ArrayList<Integer>();
     private int square = 3;
     private boolean reconstructing = false;
-
     public JumbledLoader(){
         loadImage(new File("images/smallpandzza.jpg"));
         for(int i = 0; i<square*square; i++){
@@ -48,7 +47,7 @@ public class JumbledLoader extends JPanel{
         double w = i.getWidth();
         double h = i.getHeight();
         int targetW = 2*JumbleMain.frame.getWidth()/5;
-        int targetH = 2*JumbleMain.frame.getHeight()/5;
+        int targetH = 2*JumbleMain.frame.getHeight()/3;
         if(Math.max(w,h) == w && w>targetW){
             h = h/w*targetW;
             w = targetW; 
@@ -82,7 +81,6 @@ public class JumbledLoader extends JPanel{
         cw = img.getWidth()/square;
         ch = img.getHeight()/square;
         BufferedImage jumbledImg = new BufferedImage(cw*square, ch*square, BufferedImage.TYPE_INT_ARGB);
-        
         cells.clear();
         for(int i = 0; i<square*square; i++){
             cells.add(i);
@@ -128,7 +126,6 @@ public class JumbledLoader extends JPanel{
                     g.drawImage(img.getSubimage(i%square*cw, (int)i/square*ch, cw, ch),0,0,null);
                     g.dispose();
                     BufferedImage subOriginalImg = originalImg.getSubimage(i%square*cw, (int)i/square*ch, cw, ch);
-                    
                     if(bufferedImagesEqual(subImg, subOriginalImg)){
                         continue;
                     }
