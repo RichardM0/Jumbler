@@ -7,10 +7,18 @@ import java.awt.image.BufferedImage;
 import javax.swing.JSlider;
 import javax.swing.event.*;
 
-
+/*
+ * Class JumbleMain made by Richard M. 
+ * Finished May 26, 2024
+ */
 
 public class JumbleMain extends JPanel implements ActionListener, ItemListener
 {
+    /*
+     * Static variables for class JumbleMain
+     * Sets up all Java Swing elements:
+     * Buttons, frame, panel
+     */
     public static JFrame frame;
     private static JPanel bottomPanel, imgPanel, buttonPanel;
     private static JButton shuffleImg, reconstructImg, saveImg, setOriginal, setJumbled;
@@ -20,17 +28,23 @@ public class JumbleMain extends JPanel implements ActionListener, ItemListener
     private static JRadioButtonMenuItem two, three;
     private static ButtonGroup gridGroup;
     
+    /*
+     * Constructor for class JumbleMain
+     * Includes all Java Swing elements being created
+     * Add Action Listener for buttons
+     * Styles the Frame
+     */
     public JumbleMain() {
         frame = new JFrame();
         bottomPanel = new JPanel();
         buttonPanel = new JPanel();
         imgPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); 
 
-        shuffleImg = new JButton("Shuffle");
+        shuffleImg = new JButton("Jumble");
         reconstructImg = new JButton("Reconstruct");
         saveImg = new JButton("Save");
-        setOriginal = new JButton("Set Original");
-        setJumbled = new JButton("Change Jumbled");
+        setOriginal = new JButton("Select Image");
+        setJumbled = new JButton("Upload Jumbled");
 
         shuffleImg.addActionListener(this);
         reconstructImg.addActionListener(this);
@@ -74,6 +88,11 @@ public class JumbleMain extends JPanel implements ActionListener, ItemListener
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
+    /*
+     * Method main and saveImage
+     * main method allows user to run the JumbleMain class to see frame
+     * saveImage method allows user to save an Image 
+     */
     public static void main(String[] args){      
         new JumbleMain();
     }
@@ -85,6 +104,12 @@ public class JumbleMain extends JPanel implements ActionListener, ItemListener
             System.out.println("Image could not be read");
         }
     }
+    /*
+     * itemStateChanged method
+     * Checks which menuItem is currently selected
+     * If its two, set the shuffle + reconstruct to 2x2
+     * If its three, set the shuffle + reconstruct to 3x3
+     */
     public void itemStateChanged(ItemEvent e){
         if (e.getStateChange() == ItemEvent.SELECTED) {
             if (e.getSource() == two) {
@@ -94,6 +119,16 @@ public class JumbleMain extends JPanel implements ActionListener, ItemListener
             }
         }
     }
+    /*
+     * actionPerformed method
+     * allows program to do certain task based off what button the user presses
+     * shuffle4Img shuffles image into 4 cells
+     * shuffle9Img shuffles image into 9 cells
+     * reconstructImg reconstructs jumbled image
+     * saveImg saves image
+     * setOriginal changes the original Image
+     * setJumbled allows user to upload jumbled image.
+     */
     public void actionPerformed(ActionEvent e){
         if(e.getSource() == shuffleImg){
             L.jumble();
@@ -102,20 +137,20 @@ public class JumbleMain extends JPanel implements ActionListener, ItemListener
             L.reconstruct();
         }
         else if(e.getSource() == saveImg){
-            JFileChooser chooser = new JFileChooser("./images");
+            JFileChooser chooser = new JFileChooser("./");
             if(chooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
                saveImage(chooser.getSelectedFile());
             }
         }
         else if(e.getSource() == setOriginal){
-            JFileChooser select = new JFileChooser("images/");
+            JFileChooser select = new JFileChooser("./");
             int status = select.showOpenDialog(frame);
             if (status == JFileChooser.APPROVE_OPTION) {
                 L.setOriginalImg(select.getSelectedFile());
             }
         }
         else if(e.getSource() == setJumbled){
-            JFileChooser select = new JFileChooser("images/");
+            JFileChooser select = new JFileChooser("./");
             int status = select.showOpenDialog(frame);
             if (status == JFileChooser.APPROVE_OPTION) {
                 L.setImg(select.getSelectedFile());
