@@ -47,15 +47,17 @@ public class JumbledLoader extends JPanel{
     public BufferedImage resize(BufferedImage i){
         double w = i.getWidth();
         double h = i.getHeight();
-        if(Math.max(w,h) == w && w>300){
-            h = h/w*300;
-            w = 300; 
-        }else if(Math.max(w,h) == h && h>300){
-            w = w/h*300;
-            h = 300;
-        }else if(w == h && w>300){
-            w = 300;
-            h = 300;
+        int targetW = 2*JumbleMain.frame.getWidth()/5;
+        int targetH = 2*JumbleMain.frame.getHeight()/5;
+        if(Math.max(w,h) == w && w>targetW){
+            h = h/w*targetW;
+            w = targetW; 
+        }else if(Math.max(w,h) == h && h>targetH){
+            w = w/h*targetH;
+            h = targetH;
+        }else if(w == h && w>targetW){
+            w = targetW;
+            h = targetW;
         }
         BufferedImage resizedImage = new BufferedImage((int)w, (int)h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = resizedImage.createGraphics();
@@ -191,8 +193,8 @@ public class JumbledLoader extends JPanel{
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         int imgY = JumbleMain.frame.getHeight()/2-2*curHeight/3;
-        int imgX = JumbleMain.frame.getWidth()/2;
-        g2d.drawImage(originalImg, imgX - 4*curWidth/3, imgY, oWidth, oHeight, null);
-        g2d.drawImage(img, imgX + curWidth/3, imgY, curWidth, curHeight, null);
+        int width = JumbleMain.frame.getWidth();
+        g2d.drawImage(originalImg, 50, imgY, oWidth, oHeight, null);
+        g2d.drawImage(img, width-curWidth-50 , imgY, curWidth, curHeight, null);
     }
 }
