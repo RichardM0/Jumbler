@@ -35,6 +35,7 @@ public class JumbledLoader extends JPanel{
      */
     public JumbledLoader(){
         loadImage(new File("."));
+        JOptionPane.showMessageDialog(JumbleMain.frame, "Default is 3x3");
         for(int i = 0; i<square*square; i++){
             cells.add(i);
         }
