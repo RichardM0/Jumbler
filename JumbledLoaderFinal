@@ -1,0 +1,281 @@
+import java.io.*;
+import java.awt.*;
+import java.awt.image.*;
+import javax.imageio.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.lang.Thread;
+import javax.swing.*;
+
+
+/*
+ * Class JumbledLoader by Richard M.
+ * Finished May 26, 2024
+ */
+public class JumbledLoader extends JPanel{
+    /*
+     * Instance variables for class JumbledLoader
+     * Stores values of current and original image width, height
+     * Calculates cell width and cell height
+     * Stores variable square, and an ArrayList for randomizing sells
+     * Reconstructing variable checks if program is already reconstructing to avoid rerun
+     */
+    private BufferedImage img, originalImg;
+    private int oWidth, oHeight, curWidth, curHeight, cw, ch;
+    private ArrayList<Integer> cells = new ArrayList<Integer>();
+    private int square = 3;
+    private boolean reconstructing = false;
+    /*
+     * constructor for class JumbledLoader and method loadImage
+     * loads an image requested by user if given, otherwise lets user select image using button
+     * Initialize the "original" ArrayList for cells to shuffle
+     * method loadImage sets current and original image to some bufferedImage
+     * initializes all the instance variables
+     * Resizes image accordingly if too large
+     */
+    public JumbledLoader(){
+        loadImage(new File("."));
+        for(int i = 0; i<square*square; i++){
+            cells.add(i);
+        }
+    }
+    public JumbledLoader(File f){
+        loadImage(f);
+    }
+    public void loadImage(File f) {
+        try {
+            img = ImageIO.read(f);
+            originalImg = ImageIO.read(new File("."));
+            curWidth = img.getWidth();
+            curHeight = img.getHeight();
+            oWidth = originalImg.getWidth();
+            oHeight = img.getHeight();
+            img = resize(img);
+            originalImg = resize(originalImg);
+        } catch (IOException e) {
+            System.out.println("Please select an image.");
+        }
+    }
+    /*
+     * method setSquare and resize
+     * setSquare allows user to choose between 2x2 or 3x3 cells
+     * resize checks if the image is greater than some height or width, and scales.
+     * Uses a ratio between width and height to make sure it is consistent
+     * Repaints the image after resizing, then updates the image passing through.
+     * Returns a bufferedImage, which is the resized version of the BufferedImage i.
+     */
+    public void setSquare(int s){
+        square = s;
+    }
+    public BufferedImage resize(BufferedImage i){
+        double w = i.getWidth();
+        double h = i.getHeight();
+        int targetW = 2*JumbleMain.frame.getWidth()/5;
+        int targetH = 2*JumbleMain.frame.getHeight()/3;
+        if(Math.max(w,h) == w && w>targetW){
+            h = h/w*targetW;
+            w = targetW; 
+        }else if(Math.max(w,h) == h && h>targetH){
+            w = w/h*targetH;
+            h = targetH;
+        }else if(w == h && w>targetW){
+            w = targetW;
+            h = targetW;
+        }
+        BufferedImage resizedImage = new BufferedImage((int)w, (int)h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = resizedImage.createGraphics();
+        g.drawImage(i, 0, 0, (int) w, (int) h, null);
+        g.dispose();
+        try{
+            if(bufferedImagesEqual(i, img)){
+                curWidth = (int) w;
+                curHeight = (int) h;
+            }
+        }catch(Exception e){
+            curWidth = (int) w;
+            curHeight = (int) h;
+        }
+        try{
+            if(bufferedImagesEqual(i, originalImg)){
+                oWidth = (int) w;
+                oHeight = (int) h;
+            }
+        }catch(Exception e){
+            ;
+        }
+        return resizedImage;
+    }
+    /*
+     * method jumble
+     * Checks if it's reconstructing so we don't shuffle while reconstruction
+     * Recalculate cell width and cell height
+     * Create new default image jumbledImg
+     * randomize the numbers in cells ArrayList to form a "shuffled" ArrayList
+     * Use modulus to calculate the position of current cell
+     * Draw a "subimage" of the current image at the shuffled position
+     * Repaint, refresh, update frame, and dispose of graphics
+     */
+    public void jumble(){  
+        try{
+            if(reconstructing){
+                JOptionPane.showMessageDialog(JumbleMain.frame, "Currently Reconstructing");
+                return;
+            }
+            cw = img.getWidth()/square;
+            ch = img.getHeight()/square;
+            BufferedImage jumbledImg = new BufferedImage(cw*square, ch*square, BufferedImage.TYPE_INT_ARGB);
+            cells.clear();
+            for(int i = 0; i<square*square; i++){
+                cells.add(i);
+            }
+            Graphics2D g2d = jumbledImg.createGraphics();
+            Collections.shuffle(cells);
+            for(int i = 0; i<cells.size(); i++){
+                int cellIndex = cells.get(i);
+                g2d.drawImage(img.getSubimage(cellIndex%square*cw, (int)cellIndex/square*ch, cw, ch),cw*(i%square), ch*((int)i/square), null);
+            }
+            g2d.dispose();
+            img = jumbledImg;
+            repaint();
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(JumbleMain.frame, "Please load an image.");
+        }
+    }
+    /*
+     * method bufferedImagesEqual
+     * loops through entire image to see if the BufferedImages are equal
+     * checks RGB value
+     */
+    public boolean bufferedImagesEqual(BufferedImage img1, BufferedImage img2)
+    {
+        int width = Math.min(img1.getWidth(), img2.getWidth());
+        int height = Math.min(img1.getHeight(), img2.getHeight());
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (img1.getRGB(x, y) != img2.getRGB(x, y))
+                    return false;
+            }
+        }
+        return true;
+    }
+    /*
+     * method reconstruct
+     * checks if already reconstructing and does not execute if it is
+     * Follows similar logic to jumble in regards to drawing the images
+     * It treats the image as a "2d Array"
+     * Loops through the cells, and searches for the correct subimage at the current spot of the loop
+     * Finds the position of the correct subimage and swaps the correct subimage with current subimage
+     * Repeats until finished
+     * If the subimage is already in the correct spot, skip this process.
+     * Output the number of tries it took.
+     * Sleep accordingly to the cell size to see animation
+     */
+    public void reconstruct(){
+        if(reconstructing){
+            JOptionPane.showMessageDialog(JumbleMain.frame, "Already Reconstructing.");
+            return;
+        }
+        Thread t = new Thread(() ->{
+            try{
+                reconstructing = true;
+                cw = img.getWidth()/square;
+                ch = img.getHeight()/square;
+                int numTries = 0;
+                int length = square*square;
+                Graphics2D g2d = img.createGraphics();
+                for(int i=0; i<length; i++){
+                    BufferedImage subImg = new BufferedImage(cw,ch,BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D g = subImg.createGraphics();
+                    g.drawImage(img.getSubimage(i%square*cw, (int)i/square*ch, cw, ch),0,0,null);
+                    g.dispose();
+                    BufferedImage subOriginalImg = originalImg.getSubimage(i%square*cw, (int)i/square*ch, cw, ch);
+                    if(bufferedImagesEqual(subImg, subOriginalImg)){
+                        continue;
+                    }
+                    else{
+                        for(int j = 0; j<length; j++){
+                            BufferedImage loopOriginalImg = img.getSubimage(j%square*cw, (int)j/square*ch, cw, ch);
+                            if(bufferedImagesEqual(subOriginalImg, loopOriginalImg)){
+                                 g2d.drawImage(img.getSubimage(j%square*cw, (int)j/square*ch, cw, ch), i%square*cw, (int)i/square*ch, null); 
+                                 g2d.drawImage(subImg, j%square*cw, (int)j/square*ch, null);
+                                 repaint();
+                            }
+                            try{
+                                 if(square == 3){
+                                     Thread.sleep(150);
+                                 }
+                                 else if(square == 2){
+                                     Thread.sleep(500);
+                                 }
+                            }
+                            catch(Exception e){
+                                 ;
+                            }
+                        }
+                    }
+                    numTries++;
+                }
+                if(numTries == square*square){
+                    JOptionPane.showMessageDialog(JumbleMain.frame, "Failed to reconstruct: Grids do not match");
+                }
+                else if(numTries == 0){
+                    JOptionPane.showMessageDialog(JumbleMain.frame, "Already Reconstructed.");
+                }
+                else{
+                    if(bufferedImagesEqual(img,originalImg)){
+                        JOptionPane.showMessageDialog(JumbleMain.frame, "Reconstruction is finished in " + numTries + " steps");
+                    }
+                    else{
+                        JOptionPane.showMessageDialog(JumbleMain.frame, "Failed to reconstruct: Grids do not match");
+                    }
+                }
+                reconstructing = false;
+            }
+            catch(Exception e){
+                JOptionPane.showMessageDialog(JumbleMain.frame, "Failed to reconstruct: Grids do not match");
+                reconstructing = false;
+            }
+        });
+        t.start();
+    }
+    /*
+     * methods setOriginalImg, setImg, getImg
+     * setOriginalImg changes the originalImg based on what the user selects, then resizes
+     * setImg is the same as setOriginalImg, but just for the current image
+     * getImg gets the current Image
+     */
+    public void setOriginalImg(File f){
+        try{
+            originalImg = ImageIO.read(f);
+            originalImg = resize(originalImg);
+        }catch(Exception e){
+            System.out.println("Failed to update Original Image");
+        }
+        repaint();
+    }
+    public void setImg(File f){
+        try{
+            img = ImageIO.read(f);
+            img = resize(img);
+        }catch(Exception e){
+            System.out.println("Failed to update Current Image");
+        }
+        repaint();
+    }
+    public BufferedImage getImg(){
+        return img;
+    }
+    /*
+     * paint method
+     * paint displays all images
+     * Uses the width and height of the frame to calculate originalImg and img positions
+     * Displays vertically aligned, and separated by small whitespace horizontally.
+     */
+    public void paint(Graphics g) {    
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.drawImage(originalImg, 50, JumbleMain.frame.getHeight()/2-2*oHeight/3, oWidth, oHeight, null);
+        g2d.drawImage(img, JumbleMain.frame.getWidth()-curWidth-50 , JumbleMain.frame.getHeight()/2-2*curHeight/3, curWidth, curHeight, null);
+    }
+}
